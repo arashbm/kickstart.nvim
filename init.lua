@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -175,6 +175,7 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -756,7 +757,7 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
+        local disable_filetypes = { c = true, cpp = true, python = true }
         if disable_filetypes[vim.bo[bufnr].filetype] then
           return nil
         else
@@ -768,9 +769,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
-        -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
-        --
+        -- python = { 'black' },
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
       },
@@ -799,12 +798,12 @@ require('lazy').setup({
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
         },
         opts = {},
       },
@@ -844,7 +843,7 @@ require('lazy').setup({
       appearance = {
         -- 'mono' (default) for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
         -- Adjusts spacing to ensure icons are aligned
-        nerd_font_variant = 'mono',
+        nerd_font_variant = 'normal',
       },
 
       completion = {
@@ -894,7 +893,10 @@ require('lazy').setup({
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      vim.cmd.colorscheme 'tokyonight-storm'
+
+      -- You can configure highlights by doing something like:
+      -- vim.cmd.hi 'Comment gui=none'
     end,
   },
 
@@ -944,7 +946,31 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'cpp',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'python',
+        'tsx',
+        'javascript',
+        'typescript',
+        'vimdoc',
+        'vim',
+        'elixir',
+        'heex',
+        'yaml',
+        'css',
+        'rst',
+      },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -984,7 +1010,7 @@ require('lazy').setup({
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
@@ -1011,6 +1037,56 @@ require('lazy').setup({
     },
   },
 })
+
+vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
+  pattern = { '*.tpp' },
+  group = 'filetypedetect',
+  command = 'set filetype=cpp',
+})
+
+if vim.g.neovide then
+  vim.g.neovide_refresh_rate_idle = 20
+  vim.g.neovide_floating_blur = true
+  vim.g.neovide_floating_blur_amount_x = 2.0
+  vim.g.neovide_floating_blur_amount_y = 2.0
+
+  vim.g.neovide_floating_shadow = true
+  vim.g.neovide_floating_z_height = 10
+  vim.g.neovide_light_angle_degrees = 45
+  vim.g.neovide_light_radius = 5
+
+  vim.g.neovide_cursor_animation_length = 0.05
+
+  vim.keymap.set({ 'n', 'v' }, '<C-S-C>', '"+y')
+  vim.keymap.set({ 'n', 'v' }, '<C-S-V>', '"+P')
+
+  -- vim.keymap.set('n', '<A-H>', require('smart-splits').resize_left)
+  -- vim.keymap.set('n', '<A-J>', require('smart-splits').resize_down)
+  -- vim.keymap.set('n', '<A-K>', require('smart-splits').resize_up)
+  -- vim.keymap.set('n', '<A-L>', require('smart-splits').resize_right)
+
+  vim.keymap.set({ 'n', 'v' }, '<C-Tab>', '<Cmd>BufferNext<CR>', { noremap = true, silent = true })
+  vim.keymap.set({ 'n', 'v' }, '<C-S-Tab>', '<Cmd>BufferPrevious<CR>', { noremap = true, silent = true })
+
+  vim.keymap.set({ 'n', 'v', 'i', 'c' }, '<F2>', '<Cmd>:enew<CR>', { noremap = true, silent = true })
+  vim.keymap.set({ 'n', 'v', 'i', 'c' }, '<C-F2>', '<Cmd>:vnew<CR>', { noremap = true, silent = true })
+  vim.keymap.set({ 'n', 'v', 'i', 'c' }, '<S-F2>', '<Cmd>:new<CR>', { noremap = true, silent = true })
+
+  -- vim.o.guifont = "Ubuntu Mono:h14"
+end
+
+vim.api.nvim_set_keymap('', '<C-S-V>', '"+P', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('!', '<C-S-V>', '<Cmd>:set paste<CR><C-R>+<Cmd>:set nopaste<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('t', '<C-S-V>', '<C-R>+', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', '<C-S-v>', '<C-R>+', { noremap = true, silent = true })
+
+vim.api.nvim_command 'autocmd TermOpen * startinsert' -- starts in insert mode
+vim.api.nvim_command 'autocmd TermOpen * setlocal nonumber' -- no numbers
+vim.api.nvim_command 'autocmd TermEnter * setlocal signcolumn=no' -- no sign column
+
+vim.opt.laststatus = 3
+
+require('avante_lib').load()
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
