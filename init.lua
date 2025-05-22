@@ -808,6 +808,7 @@ require('lazy').setup({
         opts = {},
       },
       'folke/lazydev.nvim',
+      'fang2hou/blink-copilot',
     },
     --- @module 'blink.cmp'
     --- @type blink.cmp.Config
@@ -853,9 +854,18 @@ require('lazy').setup({
       },
 
       sources = {
-        default = { 'lsp', 'path', 'snippets', 'lazydev' },
+        default = { 'lsp', 'path', 'snippets', 'lazydev', 'copilot' },
         providers = {
           lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
+          copilot = {
+            name = 'copilot',
+            module = 'blink-copilot',
+            score_offset = 100,
+            async = true,
+            opts = {
+              max_completions = 3,
+            },
+          },
         },
       },
 
@@ -1086,7 +1096,8 @@ vim.api.nvim_command 'autocmd TermEnter * setlocal signcolumn=no' -- no sign col
 
 vim.opt.laststatus = 3
 
-require('avante_lib').load()
+-- require('avante_lib').load()
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+--
